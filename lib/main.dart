@@ -8,17 +8,17 @@ import 'package:http/http.dart';
 Color appColor = Colors.white;
 Brightness mode = Brightness.light;
 void main() {
-  runApp(MaterialApp(
-    home: QuotesPage(),
-  ));
+  runApp(QuotesPage(),
+  );
 }
 bool apiCall = false;
 class QuotesPage extends StatefulWidget {
   @override
   _QuotesPageState createState() => _QuotesPageState();
 }
+AnimationController _controller;
 
-class _QuotesPageState extends State<QuotesPage> {
+class _QuotesPageState extends State<QuotesPage> with SingleTickerProviderStateMixin {
   String quote = 'Time is not the main thing. It is the only thing.';
   String author = 'Miles Davis';
 
@@ -75,11 +75,7 @@ class _QuotesPageState extends State<QuotesPage> {
                 Expanded(
                   flex: 5,
                   child: Center(
-                    child: Text(
-                      '$quote',
-                      style: TextStyle(fontFamily: 'Playfair', fontSize: 30),
-                      textAlign: TextAlign.left,
-                    ),
+                    child:  CommonQuoteTextWidget(quote: quote),
                   ),
                 ),
 
@@ -151,6 +147,24 @@ class _QuotesPageState extends State<QuotesPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class CommonQuoteTextWidget extends StatelessWidget {
+  const CommonQuoteTextWidget({
+    Key key,
+    @required this.quote,
+  }) : super(key: key);
+
+  final String quote;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$quote',
+      style: TextStyle(fontFamily: 'Playfair', fontSize: 30),
+      textAlign: TextAlign.left,
     );
   }
 }
