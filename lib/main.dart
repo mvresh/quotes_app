@@ -1,12 +1,18 @@
 import 'dart:convert';
 
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:drawerbehavior/drawerbehavior.dart';
+import 'package:simple_animations/simple_animations.dart';
+import 'package:screenshot_share_image/screenshot_share_image.dart';
 
 
-Color appColor = Colors.white;
+Color appColor = Colors.deepPurple;
 Brightness mode = Brightness.light;
+Color color1Begin = Colors.lightGreen.shade100;
+Color color1End = Colors.lightBlue.shade100;
 void main() {
   runApp(QuotesPage(),
   );
@@ -16,11 +22,11 @@ class QuotesPage extends StatefulWidget {
   @override
   _QuotesPageState createState() => _QuotesPageState();
 }
-AnimationController _controller;
 
 class _QuotesPageState extends State<QuotesPage> with SingleTickerProviderStateMixin {
   String quote = 'Time is not the main thing. It is the only thing.';
   String author = 'Miles Davis';
+
 
   Future<Map> getQuote() async {
     Map decodedMap;
@@ -39,116 +45,91 @@ class _QuotesPageState extends State<QuotesPage> with SingleTickerProviderStateM
         brightness: mode,
       ),
       home: Scaffold(
-        drawer: Drawer(
-          child: ListView(
+        body: SafeArea(
+          child:Stack(
             children: <Widget>[
-              DrawerHeader(
-                child: Align(alignment: Alignment.centerLeft,child: Text('Change Animation',style: TextStyle(fontFamily: 'Playfair', fontSize: 35),)),
-              ),
-              ListTile(
-                title: Text('Fade Transition',style: TextStyle(fontFamily: 'Playfair', fontSize: 25,)),
-                onTap: (){
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text('Scale Transition',style: TextStyle(fontFamily: 'Playfair', fontSize: 25)),
-                onTap: (){
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text('Slide Transition',style: TextStyle(fontFamily: 'Playfair', fontSize: 25)),
-                onTap: (){
-                  Navigator.pop(context);
-                },
+              Positioned.fill(child: AnimatedBackground(color1Begin,color1End)),
+              onBottom(AnimatedWave(
+                height: 180,
+                speed: 1.0,
+              )),
+              onBottom(AnimatedWave(
+                height: 120,
+                speed: 0.9,
+                offset: pi,
+              )),
+              onBottom(AnimatedWave(
+                height: 220,
+                speed: 1.2,
+                offset: pi / 2,
+              )),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 5,
+                      child: Center(
+                        child:  CommonQuoteTextWidget(quote: quote),
+                      ),
+                    ),
+
+                    Expanded(flex: 1,
+                      child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '$author',
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: appColor == Colors.white ? Colors.red : Colors.deepPurple.shade900,
+                                fontStyle: FontStyle.italic),
+                            textAlign: TextAlign.left,
+                          )),
+                    ),
+                    Expanded(flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: RawMaterialButton(
+                              constraints: BoxConstraints.tightFor(width: 60,height: 60),
+                              shape: CircleBorder(),
+                              elevation: 2.0,
+                              onPressed: () async{
+                                setState(() {
+                                  apiCall = true;
+                                });
+                                Map finalQuoteMap = await getQuote();
+                                setState(() {
+                                  quote = finalQuoteMap['quote']['body'];
+                                  author = finalQuoteMap['quote']['author'];
+                                  apiCall = false;
+                                });
+                              },
+                              child: apiCall == false?Icon(Icons.arrow_forward,color: Colors.red,size: 30,):CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.green),strokeWidth: 1,),
+                              fillColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: Center(
-                    child:  CommonQuoteTextWidget(quote: quote),
-                  ),
-                ),
-
-                Expanded(flex: 1,
-                  child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '$author',
-                        style: TextStyle(
-                            fontSize: 20,
-                            color: appColor == Colors.white ? Colors.red : Colors.greenAccent,
-                            fontStyle: FontStyle.italic),
-                        textAlign: TextAlign.left,
-                      )),
-                ),
-                Expanded(flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: RawMaterialButton(
-                          constraints: BoxConstraints.tightFor(width: 60,height: 60),
-                          shape: CircleBorder(),
-                          elevation: 2.0,
-                          onPressed: () async{
-                            setState(() {
-                              apiCall = true;
-                            });
-                            Map finalQuoteMap = await getQuote();
-                            setState(() {
-                              quote = finalQuoteMap['quote']['body'];
-                              author = finalQuoteMap['quote']['author'];
-                              apiCall = false;
-                            });
-                          },
-                          child: apiCall == false?Icon(Icons.arrow_forward,color: Colors.red,size: 30,):CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.green),strokeWidth: 1,),
-                          fillColor: Colors.white,
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: RawMaterialButton(
-                          constraints: BoxConstraints.tightFor(width: 60,height: 60),
-                          shape: CircleBorder(),
-                          elevation: 2.0,
-                          onPressed: () {
-                            if(appColor == Colors.white){
-                              appColor = Colors.black;
-                              mode = Brightness.dark;
-                            }
-                            else{
-                              appColor = Colors.white;
-                              mode = Brightness.light;
-                            }
-
-                            setState(() {
-
-                            });
-                          },
-                          child: Icon(Icons.wb_sunny,size: 30,),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          )
         ),
       ),
     );
   }
+  onBottom(Widget child) => Positioned.fill(
+    child: Align(
+      alignment: Alignment.bottomCenter,
+      child: child,
+    ),
+  );
 }
 
 class CommonQuoteTextWidget extends StatelessWidget {
@@ -167,4 +148,102 @@ class CommonQuoteTextWidget extends StatelessWidget {
       textAlign: TextAlign.left,
     );
   }
+}
+
+class AnimatedBackground extends StatefulWidget {
+  Color color1begin;
+  Color color1end;
+  AnimatedBackground(this.color1begin,this.color1end);
+  @override
+  _AnimatedBackgroundState createState() => _AnimatedBackgroundState();
+}
+
+class _AnimatedBackgroundState extends State<AnimatedBackground> {
+  @override
+  Widget build(BuildContext context) {
+    final tween = MultiTrackTween([
+      Track("color1").add(Duration(seconds: 3),
+          ColorTween(begin: Colors.lightBlueAccent.shade100, end: Colors.greenAccent.shade200)),
+      Track("color2").add(Duration(seconds: 3),
+          ColorTween(begin: Colors.green.shade100, end: Colors.lightBlueAccent.shade100))
+    ]);
+
+    return ControlledAnimation(
+      playback: Playback.MIRROR,
+      tween: tween,
+      duration: tween.duration,
+      builder: (context, animation) {
+        return Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [animation["color1"], animation["color2"]])),
+        );
+      },
+    );
+  }
+}
+
+class AnimatedWave extends StatelessWidget {
+  final double height;
+  final double speed;
+  final double offset;
+
+  AnimatedWave({this.height, this.speed, this.offset = 0.0});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        height: height,
+        width: constraints.biggest.width,
+        child: ControlledAnimation(
+            playback: Playback.LOOP,
+            duration: Duration(milliseconds: (5000 / speed).round()),
+            tween: Tween(begin: 0.0, end: 2 * pi),
+            builder: (context, value) {
+              return CustomPaint(
+                foregroundPainter: CurvePainter(value + offset),
+              );
+            }),
+      );
+    });
+  }
+}
+
+class CurvePainter extends CustomPainter {
+  final double value;
+
+  CurvePainter(this.value);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final white = Paint()
+      ..color = Colors.white.withAlpha(50);
+    final path = Path();
+
+    final y1 = sin(value);
+    final y2 = sin(value + pi / 2);
+    final y3 = sin(value + pi);
+
+    final startPointY = size.height * (0.5 + 0.4 * y1);
+    final controlPointY = size.height * (0.5 + 0.4 * y2);
+    final endPointY = size.height * (0.5 + 0.4 * y3);
+
+    path.moveTo(size.width * 0, startPointY);
+    path.quadraticBezierTo(
+        size.width * 0.5, controlPointY, size.width, endPointY);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    canvas.drawPath(path, white);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    return true;
+  }
+
 }
